@@ -2,7 +2,7 @@ package club.autobug.androidpictures.view;
 
 import android.content.Context;
 import android.graphics.Matrix;
-import android.support.design.widget.FloatingActionButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import android.util.AttributeSet;
 
 public class BugFixedFloatingActionButton extends FloatingActionButton {

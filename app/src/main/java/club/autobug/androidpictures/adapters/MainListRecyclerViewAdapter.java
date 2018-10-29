@@ -2,8 +2,8 @@ package club.autobug.androidpictures.adapters;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +17,6 @@ import java.util.List;
 
 import club.autobug.androidpictures.R;
 import club.autobug.androidpictures.bean.AbsDataBean;
-import club.autobug.androidpictures.mvp.MainPageView;
 import club.autobug.androidpictures.utils.UtilClass;
 
 public class MainListRecyclerViewAdapter<T extends AbsDataBean> extends RecyclerView.Adapter<MainListRecyclerViewAdapter.AppViewHolder> {
