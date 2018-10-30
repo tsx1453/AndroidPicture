@@ -2,17 +2,23 @@ package club.autobug.androidpictures;
 
 import android.content.Intent;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+
 import com.google.android.material.navigation.NavigationView;
+
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,10 +30,12 @@ import java.util.List;
 import club.autobug.androidpictures.activity.DetailActivity;
 import club.autobug.androidpictures.bean.AbsDataBean;
 import club.autobug.androidpictures.bean.NavHeaderBean;
+import club.autobug.androidpictures.database.PictureEntity;
 import club.autobug.androidpictures.mvp.MainPagePresenter;
 import club.autobug.androidpictures.mvp.MainPageView;
 import club.autobug.androidpictures.adapters.MainListRecyclerViewAdapter;
 import club.autobug.androidpictures.adapters.NavHeaderRecyclerViewAdapter;
+import club.autobug.androidpictures.utils.UtilClass;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, MainPageView<AbsDataBean>,
@@ -50,6 +58,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         init();
+        UtilClass.checkExternalStoragePermission(this);
     }
 
     private void init() {
@@ -222,6 +231,7 @@ public class MainActivity extends AppCompatActivity
     public void onCLicked(AbsDataBean absDataBean) {
         Intent intent = new Intent(this, DetailActivity.class);
         intent.putExtra(DetailActivity.DATA_ID, absDataBean.getId());
+        intent.putExtra(DetailActivity.DATA_TAGS, PictureEntity.getTags(absDataBean.getTags()));
         startActivity(intent);
     }
 }

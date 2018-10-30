@@ -32,7 +32,7 @@ public class MainPagePresenter<T extends AbsDataBean> {
         model.getHeaderData(new MainPageDataModel.LoadListener<NavHeaderBean.ResBean.CategoryBean>() {
             @Override
             public void onLoaded(List<NavHeaderBean.ResBean.CategoryBean> bean) {
-                Log.d(TAG, "MainPagePresenter->onLoaded: " + bean.size());
+//                Log.d(TAG, "MainPagePresenter->onLoaded: " + bean.size());
                 view.onHeaderDataLoadCompleted(bean);
             }
         });

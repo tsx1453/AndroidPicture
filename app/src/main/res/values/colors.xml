@@ -6,4 +6,6 @@
     <color name="white">#fff</color>
 
     <color name="black_overlay">#66000000</color>
+    <color name="color_blue_normal">#1375ff</color>
+    <color name="color_blue_pressed">#105ecc</color>
 </resources>
