@@ -2,9 +2,13 @@ package club.autobug.androidpictures.mvp;
 
 import java.util.List;
 
+import club.autobug.androidpictures.AppApplication;
 import club.autobug.androidpictures.bean.MainListDataBean;
 import club.autobug.androidpictures.bean.NavHeaderBean;
+import club.autobug.androidpictures.database.AppDataBase;
+import club.autobug.androidpictures.database.PictureEntity;
 import club.autobug.androidpictures.network.NetWorkManager;
+import io.reactivex.MaybeObserver;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -105,6 +109,38 @@ public class MainPageDataModel {
                                     mainListDataBean.getRes().getVertical().get(0) != null) {
                                 listener.onLoaded(mainListDataBean.getRes().getVertical());
                             }
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        disposable.dispose();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        disposable.dispose();
+                    }
+                });
+    }
+
+    void getFavData(final LoadListener listener) {
+        AppDataBase.getInstance(AppApplication.applicationContext)
+                .pictureDao().getAllFavs()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new MaybeObserver<List<PictureEntity>>() {
+                    Disposable disposable;
+
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        disposable = d;
+                    }
+
+                    @Override
+                    public void onSuccess(List<PictureEntity> pictureEntities) {
+                        if (listener != null) {
+                            listener.onLoaded(pictureEntities);
                         }
                     }
 

@@ -47,5 +47,15 @@ public class MainPagePresenter<T extends AbsDataBean> {
         }, id, limit, skip, hotOrNew);
     }
 
+    public void loadFavData() {
+        model.getFavData(new MainPageDataModel.LoadListener<T>() {
+            @Override
+            public void onLoaded(List<T> bean) {
+                Log.d(TAG, "MainPagePresenter->onLoaded: " + bean.size());
+                view.onLoadCompleted(bean, true);
+            }
+        });
+    }
+
 
 }

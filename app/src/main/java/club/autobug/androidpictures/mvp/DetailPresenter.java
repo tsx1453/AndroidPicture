@@ -9,10 +9,6 @@ import android.util.Log;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.FutureTarget;
-import com.tbruyelle.rxpermissions2.RxPermissions;
-
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 
 import java.io.File;
 import java.io.FileFilter;

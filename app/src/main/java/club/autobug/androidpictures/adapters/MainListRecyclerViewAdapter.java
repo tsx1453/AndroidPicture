@@ -1,9 +1,13 @@
 package club.autobug.androidpictures.adapters;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.Resources;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +21,11 @@ import java.util.List;
 
 import club.autobug.androidpictures.R;
 import club.autobug.androidpictures.bean.AbsDataBean;
+import club.autobug.androidpictures.database.PictureEntity;
+import club.autobug.androidpictures.utils.JsonDataFilter;
+import club.autobug.androidpictures.utils.Preferences;
 import club.autobug.androidpictures.utils.UtilClass;
+import club.autobug.androidpictures.view.TagLayout;
 
 public class MainListRecyclerViewAdapter<T extends AbsDataBean> extends RecyclerView.Adapter<MainListRecyclerViewAdapter.AppViewHolder> {
 
@@ -48,8 +56,10 @@ public class MainListRecyclerViewAdapter<T extends AbsDataBean> extends Recycler
     public void addData(List<T> list, boolean clear) {
         if (clear) {
             mList.clear();
+            notifyDataSetChanged();
         }
         mList.addAll(list);
+        new JsonDataFilter<T>(mList, mContext).runFilter();
         notifyDataSetChanged();
         if (clear) {
             mRecyclerView.scrollToPosition(0);
@@ -77,6 +87,53 @@ public class MainListRecyclerViewAdapter<T extends AbsDataBean> extends Recycler
                     if (mainListItemClickListener != null) {
                         mainListItemClickListener.onCLicked(mList.get(i));
                     }
+                }
+            });
+            appViewHolder.imageView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if (i >= mList.size()) {
+                        return false;
+                    }
+                    final TagLayout tagLayout = new TagLayout(mContext, mList.get(i).getPictureTags());
+                    tagLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+//                    tagLayout.addTags(mList.get(i).getPictureTags());
+//                    tagLayout.requestLayout();
+//                    tagLayout.setBackgroundColor(Color.RED);
+//                    Log.d(TAG, "MainListRecyclerViewAdapter->onLongClick: "+tagLayout.getHeight());
+                    AlertDialog dialog = new AlertDialog.Builder(mContext)
+                            .setTitle("选择不想再看到的标签")
+                            .setView(tagLayout)
+                            .setNegativeButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Preferences.saveUnlike(mContext, PictureEntity.getTags(tagLayout.getSelectedTags()));
+                                    mList.remove(i);
+                                    notifyItemRemoved(i);
+                                    mRecyclerView.postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            notifyDataSetChanged();
+                                        }
+                                    }, 500);
+                                }
+                            })
+                            .setPositiveButton("取消", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            })
+                            .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialog) {
+                                    tagLayout.destory();
+                                }
+                            })
+                            .setCancelable(true).create();
+                    tagLayout.requestLayout();
+                    dialog.show();
+                    return true;
                 }
             });
         }

@@ -3,8 +3,6 @@ package club.autobug.androidpictures;
 import android.content.Intent;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
-
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -19,6 +17,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,6 +27,7 @@ import java.util.List;
 
 
 import club.autobug.androidpictures.activity.DetailActivity;
+import club.autobug.androidpictures.activity.UnlikeManageActivity;
 import club.autobug.androidpictures.bean.AbsDataBean;
 import club.autobug.androidpictures.bean.NavHeaderBean;
 import club.autobug.androidpictures.database.PictureEntity;
@@ -36,6 +36,7 @@ import club.autobug.androidpictures.mvp.MainPageView;
 import club.autobug.androidpictures.adapters.MainListRecyclerViewAdapter;
 import club.autobug.androidpictures.adapters.NavHeaderRecyclerViewAdapter;
 import club.autobug.androidpictures.utils.UtilClass;
+import club.autobug.androidpictures.view.PageLoadScrollListener;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, MainPageView<AbsDataBean>,
@@ -52,6 +53,10 @@ public class MainActivity extends AppCompatActivity
     private FloatingActionButton mFab;
     private boolean isHot = true;
     private String id;
+    private int limit = 30;
+    private boolean isNetWorkData = false;
+
+    private PageLoadScrollListener mPageListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +87,7 @@ public class MainActivity extends AppCompatActivity
         mRecyclerView.setAdapter(mAdapter);
 
         mPresenter = new MainPagePresenter<>(this);
-        mPresenter.loadMainListMixedData(30, 0, isHot, false);
+        mPresenter.loadMainListMixedData(limit, 0, isHot, false);
 
         mHeaderRecyclerView = navigationView.getHeaderView(0).findViewById(R.id.headerRecyclerView);
         mHeaderAdapter = new NavHeaderRecyclerViewAdapter(this);
@@ -94,9 +99,51 @@ public class MainActivity extends AppCompatActivity
         mPresenter.loadHeaderData();
 
         mFab = findViewById(R.id.fab);
-        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+//        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+//            @Override
+//            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+//                super.onScrolled(recyclerView, dx, dy);
+//                isGoUp = mRecyclerView.canScrollVertically(-1);
+//                changeFabIcon();
+//                if (mixedData && !isGoUp) {
+//                    mFab.hide();
+//                } else {
+//                    mFab.show();
+//                }
+//                StaggeredGridLayoutManager layoutManager = (StaggeredGridLayoutManager) recyclerView.getLayoutManager();
+//                int[] p;
+//                if (layoutManager != null) {
+//                    p = layoutManager.findLastCompletelyVisibleItemPositions(null);
+//                    if (p[1] > mAdapter.getItemCount() * 0.8) {
+//                        if (!isLoading) {
+//                            isLoading = true;
+//                            if (mixedData) {
+//                                mPresenter.loadMainListMixedData(limit, mAdapter.getItemCount(), isHot, false);
+//                            } else {
+//                                mPresenter.loadMainListTypedData(id, limit, mAdapter.getItemCount(), isHot, false);
+//                            }
+//                        }
+//                    } else {
+//                        isLoading = false;
+//                    }
+//                    Log.d(TAG, "MainActivity->onScrolled: " + mAdapter.getItemCount());
+//                }
+//            }
+
+        mPageListener = new PageLoadScrollListener((StaggeredGridLayoutManager) mRecyclerView.getLayoutManager()) {
             @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+            public void onLoadMore(int currentPage) {
+                if (isNetWorkData) {
+                    if (mixedData) {
+                        mPresenter.loadMainListMixedData(limit, limit * currentPage, isHot, false);
+                    } else {
+                        mPresenter.loadMainListTypedData(id, limit, limit * currentPage, isHot, false);
+                    }
+                }
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
                 isGoUp = mRecyclerView.canScrollVertically(-1);
                 changeFabIcon();
@@ -105,15 +152,21 @@ public class MainActivity extends AppCompatActivity
                 } else {
                     mFab.show();
                 }
+                Log.d(TAG, "MainActivity->onScrolled: " + mAdapter.getItemCount());
             }
-        });
+        };
+        mRecyclerView.addOnScrollListener(mPageListener);
         mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (isGoUp) {
                     mRecyclerView.scrollToPosition(0);
                 } else {
-                    mPresenter.loadMainListMixedData(30, 0, true, true);
+                    isNetWorkData = true;
+                    mPresenter.loadMainListMixedData(limit, 0, true, true);
+                    if (mPageListener != null) {
+                        mPageListener.reset();
+                    }
                     mixedData = true;
                     setTitle("推荐");
                     mFab.hide();
@@ -160,6 +213,7 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            startActivity(new Intent(this, UnlikeManageActivity.class));
             return true;
         } else if (id == R.id.action_sort) {
             isHot = !isHot;
@@ -176,10 +230,16 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void reloadData() {
+        if (!isNetWorkData) {
+            return;
+        }
         if (mixedData) {
-            mPresenter.loadMainListMixedData(30, 0, isHot, true);
+            mPresenter.loadMainListMixedData(limit, 0, isHot, true);
         } else {
-            mPresenter.loadMainListTypedData(id, 30, 0, isHot, true);
+            mPresenter.loadMainListTypedData(id, limit, 0, isHot, true);
+        }
+        if (mPageListener != null) {
+            mPageListener.reset();
         }
     }
 
@@ -216,13 +276,16 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onItemClick(String id, String name) {
-        mPresenter.loadMainListTypedData(id, 30, 0, isHot, true);
+        mixedData = false;
+        this.id = id;
+        isNetWorkData = true;
+        reloadData();
+//        mPageListener.reset();
+//        mPresenter.loadMainListTypedData(id, limit, 0, isHot, true);
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         }
-        this.id = id;
-        mixedData = false;
         setTitle(name);
         mFab.show();
     }
@@ -230,8 +293,25 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onCLicked(AbsDataBean absDataBean) {
         Intent intent = new Intent(this, DetailActivity.class);
-        intent.putExtra(DetailActivity.DATA_ID, absDataBean.getId());
-        intent.putExtra(DetailActivity.DATA_TAGS, PictureEntity.getTags(absDataBean.getTags()));
+        intent.putExtra(DetailActivity.DATA_ID, absDataBean.getPictureId());
+        intent.putExtra(DetailActivity.DATA_TAGS, PictureEntity.getTags(absDataBean.getPictureTags()));
         startActivity(intent);
+    }
+
+    @Override
+    public void onHeaderClick(boolean isDownload) {
+        mixedData = false;
+        if (isDownload) {
+            setTitle("已下载");
+        } else {
+            mPresenter.loadFavData();
+            setTitle("喜欢");
+        }
+        isNetWorkData = false;
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        }
+        mFab.show();
     }
 }

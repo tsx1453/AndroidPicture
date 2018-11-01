@@ -161,7 +161,7 @@ public class MainListDataBean {
                 this.atime = atime;
             }
 
-            public String getId() {
+            public String getPictureId() {
                 return id;
             }
 
@@ -220,7 +220,7 @@ public class MainListDataBean {
             }
 
             @Override
-            public List<String> getTags() {
+            public List<String> getPictureTags() {
                 return getTag();
             }
         }

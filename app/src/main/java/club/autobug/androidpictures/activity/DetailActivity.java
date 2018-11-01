@@ -7,7 +7,6 @@ import android.graphics.Color;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.media.Image;
 import android.os.Bundle;
 
 import androidx.appcompat.widget.Toolbar;
@@ -25,18 +24,14 @@ import com.bumptech.glide.Glide;
 import com.github.chrisbanes.photoview.PhotoView;
 
 import java.util.Objects;
-
-import androidx.room.RxRoom;
 import club.autobug.androidpictures.R;
 import club.autobug.androidpictures.mvp.DetailPresenter;
 import club.autobug.androidpictures.mvp.DetailView;
 import club.autobug.androidpictures.utils.UtilClass;
 import io.reactivex.CompletableObserver;
-import io.reactivex.android.plugins.RxAndroidPlugins;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
-import okhttp3.internal.Util;
+
 
 public class DetailActivity extends AppCompatActivity implements DetailView {
 

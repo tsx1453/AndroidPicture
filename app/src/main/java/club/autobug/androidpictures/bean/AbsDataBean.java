@@ -8,8 +8,8 @@ abstract public class AbsDataBean {
 
     public abstract String getThumbnailUrl();
 
-    public abstract List<String> getTags();
+    public abstract List<String> getPictureTags();
 
-    public abstract String getId();
+    public abstract String getPictureId();
 
 }

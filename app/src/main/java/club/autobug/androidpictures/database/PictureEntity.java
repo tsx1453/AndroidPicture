@@ -7,9 +7,10 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
+import club.autobug.androidpictures.bean.AbsDataBean;
 
 @Entity
-public class PictureEntity {
+public class PictureEntity extends AbsDataBean {
 
     @PrimaryKey(autoGenerate = true)
     private int id;
@@ -33,6 +34,7 @@ public class PictureEntity {
         this.id = id;
     }
 
+    @Override
     public String getPictureId() {
         return pictureId;
     }
@@ -56,13 +58,32 @@ public class PictureEntity {
 
     @Ignore
     public static String getTags(List<String> list) {
+        if (list.size() < 1) {
+            return "";
+        }
         StringBuilder stringBuilder = new StringBuilder();
         for (String i : list) {
             stringBuilder.append(i);
             stringBuilder.append(",");
         }
-        stringBuilder.delete(stringBuilder.length() - 1, stringBuilder.length());
+        if (stringBuilder.length() > 0) {
+            stringBuilder.delete(stringBuilder.length() - 1, stringBuilder.length());
+        }
         return stringBuilder.toString();
     }
 
+    @Override
+    public String getOriginalImageUrl() {
+        return null;
+    }
+
+    @Override
+    public String getThumbnailUrl() {
+        return "http://img5.adesk.com/" + getPictureId();
+    }
+
+    @Override
+    public List<String> getPictureTags() {
+        return getTagList(tags);
+    }
 }
